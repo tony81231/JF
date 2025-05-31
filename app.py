@@ -5,7 +5,7 @@ from elevenlabs import ElevenLabs, Voice, play
 
 # === CONFIGURE GOOGLE GEMINI ===
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-pro")
+model = genai.GenerativeModel(model_name="gemini-pro")
 
 # === CONFIGURE ELEVENLABS ===
 eleven_api_key = os.getenv("ELEVENLABS_API_KEY")
