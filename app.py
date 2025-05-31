@@ -1,31 +1,40 @@
 import streamlit as st
 import os
-from openai import OpenAI
+import google.generativeai as genai
 from elevenlabs import ElevenLabs, Voice, play
 
-# Load secrets
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# === CONFIGURE GOOGLE GEMINI ===
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+model = genai.GenerativeModel("gemini-pro")
+
+# === CONFIGURE ELEVENLABS ===
 eleven_api_key = os.getenv("ELEVENLABS_API_KEY")
 voice_id = os.getenv("ELEVENLABS_VOICE_ID")
-
 eleven = ElevenLabs(api_key=eleven_api_key)
 
+# === STREAMLIT UI ===
 st.set_page_config(page_title="Jarvis AI Assistant", layout="centered")
-st.markdown("## 🤖 Jarvis - Your Personal Assistant")
+st.markdown("## 🤖 Jarvis - Your Personal Assistant (Gemini Powered)")
 
-user_input = st.text_input("What can I help you with?", "")
+user_input = st.text_input("What would you like to ask Jarvis?", "")
 
 if st.button("Ask Jarvis") and user_input:
     with st.spinner("Jarvis is thinking..."):
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are Jarvis from Iron Man. Speak with a formal British tone."},
-                {"role": "user", "content": user_input}
-            ]
-        )
-        reply = response.choices[0].message.content
-        st.markdown(f"**Jarvis:** {reply}")
+        try:
+            # === GEMINI GENERATES RESPONSE ===
+            response = model.generate_content(
+                f"You are Jarvis from Iron Man. Speak with a formal British tone. Respond to: {user_input}"
+            )
+            reply = response.text
+            st.markdown(f"**Jarvis:** {reply}")
 
-        audio = eleven.generate(text=reply, voice=Voice(voice_id=voice_id), model="eleven_multilingual_v2")
-        st.audio(audio, format="audio/mp3")
+            # === ELEVENLABS VOICE OUTPUT ===
+            audio = eleven.generate(
+                text=reply,
+                voice=Voice(voice_id=voice_id),
+                model="eleven_multilingual_v2"
+            )
+            st.audio(audio, format="audio/mp3")
+
+        except Exception as e:
+            st.error(f"❌ Error: {str(e)}")
