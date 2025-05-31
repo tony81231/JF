@@ -18,7 +18,7 @@ user_input = st.text_input("What can I help you with?", "")
 if st.button("Ask Jarvis") and user_input:
     with st.spinner("Jarvis is thinking..."):
         response = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are Jarvis from Iron Man. Speak with a formal British tone."},
                 {"role": "user", "content": user_input}
