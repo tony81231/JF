@@ -1,34 +1,33 @@
 import streamlit as st
 import os
 import google.generativeai as genai
-from elevenlabs import ElevenLabs, Voice, play
+from elevenlabs import ElevenLabs, Voice
 
-# === CONFIGURE GOOGLE GEMINI ===
+# === CONFIGURE GEMINI ===
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel(model_name="gemini-pro")
+model = genai.GenerativeModel(model_name="models/gemini-pro")
 
 # === CONFIGURE ELEVENLABS ===
-eleven_api_key = os.getenv("ELEVENLABS_API_KEY")
+eleven = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
 voice_id = os.getenv("ELEVENLABS_VOICE_ID")
-eleven = ElevenLabs(api_key=eleven_api_key)
 
 # === STREAMLIT UI ===
 st.set_page_config(page_title="Jarvis AI Assistant", layout="centered")
-st.markdown("## 🤖 Jarvis - Your Personal Assistant (Gemini Powered)")
+st.markdown("## 🤖 Jarvis - Your Personal Assistant (Gemini + ElevenLabs)")
 
-user_input = st.text_input("What would you like to ask Jarvis?", "")
+user_input = st.text_input("🗨️ What would you like to ask Jarvis?")
 
 if st.button("Ask Jarvis") and user_input:
-    with st.spinner("Jarvis is thinking..."):
+    with st.spinner("🧠 Jarvis is thinking..."):
         try:
-            # === GEMINI GENERATES RESPONSE ===
+            # === GENERATE TEXT WITH GEMINI ===
             response = model.generate_content(
-                f"You are Jarvis from Iron Man. Speak with a formal British tone. Respond to: {user_input}"
+                f"You are Jarvis from Iron Man. Respond with formal British tone. User asked: {user_input}"
             )
             reply = response.text
             st.markdown(f"**Jarvis:** {reply}")
 
-            # === ELEVENLABS VOICE OUTPUT ===
+            # === GENERATE VOICE WITH ELEVENLABS ===
             audio = eleven.generate(
                 text=reply,
                 voice=Voice(voice_id=voice_id),
@@ -37,4 +36,4 @@ if st.button("Ask Jarvis") and user_input:
             st.audio(audio, format="audio/mp3")
 
         except Exception as e:
-            st.error(f"❌ Error: {str(e)}")
+            st.error(f"❌ Error: {e}")
